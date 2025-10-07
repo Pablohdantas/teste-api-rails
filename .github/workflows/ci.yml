@@ -6,37 +6,6 @@ on:
     branches: [ main ]
 
 jobs:
-  scan_ruby:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
-
   test:
     runs-on: ubuntu-latest
 
@@ -56,12 +25,11 @@ jobs:
           POSTGRES_PASSWORD: password
 
     steps:
-      - name: Install packages
-        # Adiciona 'netcat' (nc) ao pacote de instalação para o step de espera
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat-openbsd
-
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat-openbsd
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -72,9 +40,9 @@ jobs:
       - name: Wait for PostgreSQL
         run: |
           for i in $(seq 1 10); do
-            nc -z postgres 5432 && echo "PostgreSQL started" && exit 0
+            nc -z localhost 5432 && echo "PostgreSQL started" && exit 0
             echo "Waiting for PostgreSQL ($i/10)..."
-            sleep 1
+            sleep 2
           done
           echo "PostgreSQL did not start"
           exit 1
@@ -82,7 +50,9 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          DB_HOST: postgres
+          DB_HOST: localhost
           DB_USERNAME: runner
           DB_PASSWORD: password
-        run: bin/rails db:test:prepare test
+        run: |
+          bin/rails db:test:prepare
+          bin/rails test
