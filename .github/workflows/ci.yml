@@ -54,7 +54,8 @@ jobs:
 
     steps:
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config
+        # Adicionando 'netcat' para que o comando 'nc' funcione no step de espera
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -65,6 +66,17 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      # NOVO STEP: Espera pela conexão do PostgreSQL para evitar o erro de 'race condition'
+      - name: Wait for PostgreSQL
+        run: |
+          for i in $(seq 1 10); do
+            nc -z postgres 5432 && echo "PostgreSQL started" && exit 0
+            echo "Waiting for PostgreSQL ($i/10)..."
+            sleep 1
+          done
+          echo "PostgreSQL did not start"
+          exit 1
+      
       - name: Run tests
         env:
           RAILS_ENV: test
