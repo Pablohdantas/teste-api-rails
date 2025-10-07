@@ -40,12 +40,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # services:
-    #  redis:
-    #    image: redis
-    #    ports:
-    #      - 6379:6379
-    #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+    # Configuração do Serviço PostgreSQL para o ambiente de testes
+    services:
+      postgres:
+        image: postgres:15-alpine
+        ports:
+          - 5432:5432
+        options: --health-cmd "pg_isready" --health-interval 10s --health-timeout 5s --health-retries 5
+        env:
+          POSTGRES_DB: api_teste_test
+          POSTGRES_USER: runner
+          POSTGRES_PASSWORD: password
+
     steps:
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config
@@ -62,5 +68,8 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          # REDIS_URL: redis://localhost:6379/0
+          # Variáveis de ambiente que o seu config/database.yml espera
+          DB_HOST: postgres 
+          DB_USERNAME: runner
+          DB_PASSWORD: password
         run: bin/rails db:test:prepare test
