@@ -40,13 +40,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Configuração do Serviço PostgreSQL
     services:
       postgres:
         image: postgres:15-alpine
         ports:
           - 5432:5432
-        options: --health-cmd "pg_isready" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd "pg_isready"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         env:
           POSTGRES_DB: api_teste_test
           POSTGRES_USER: runner
@@ -55,7 +58,7 @@ jobs:
     steps:
       - name: Install packages
         # Adiciona 'netcat' (nc) ao pacote de instalação para o step de espera
-      - run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat-openbsd
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat-openbsd
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,23 +69,20 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      # NOVO STEP: Garante que o PostgreSQL está pronto antes de rodar o Rails
       - name: Wait for PostgreSQL
         run: |
           for i in $(seq 1 10); do
-            # O comando 'nc -z' testa a conexão com o host e porta
             nc -z postgres 5432 && echo "PostgreSQL started" && exit 0
             echo "Waiting for PostgreSQL ($i/10)..."
             sleep 1
           done
           echo "PostgreSQL did not start"
           exit 1
-      
+
       - name: Run tests
         env:
           RAILS_ENV: test
-          # Mapeia as variáveis de conexão esperadas pelo Rails
-          DB_HOST: postgres 
+          DB_HOST: postgres
           DB_USERNAME: runner
           DB_PASSWORD: password
         run: bin/rails db:test:prepare test
