@@ -1,5 +1,3 @@
-# config/database.yml
-
 default: &default
   adapter: postgresql 
   encoding: unicode
@@ -19,6 +17,12 @@ test:
 
 
 production:
+  <<: *default 
+  database: api_teste_production
+  username: <%= ENV["DB_USERNAME"] %>
+  password: <%= ENV["DB_PASSWORD"] %>
+
+cable:
   <<: *default 
   database: api_teste_production
   username: <%= ENV["DB_USERNAME"] %>
