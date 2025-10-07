@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: Install packages
         # Adiciona 'netcat' (nc) ao pacote de instalação para o step de espera
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat
+      - run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config netcat-openbsd
 
       - name: Checkout code
         uses: actions/checkout@v4
