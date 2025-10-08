@@ -41,8 +41,6 @@ RUN bundle exec bootsnap precompile app/ lib/
 # Final stage for app image
 FROM base
 
-WORKDIR /rails
-
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
@@ -54,5 +52,8 @@ RUN groupadd --system --gid 1000 rails && \
 USER 1000:1000
 
 # Start server
+# Start server
+WORKDIR /rails
 EXPOSE 3000
-CMD ["./bin/rails", "server"]
+CMD ["bash", "-c", "bin/rails db:prepare && bin/rails server"]
+
