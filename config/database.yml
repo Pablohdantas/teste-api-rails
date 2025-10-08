@@ -21,10 +21,14 @@ production:
   password: <%= ENV["DB_PASSWORD"] %>
   host: <%= ENV["DB_HOST"] %>
 
-  queue:
-    <<: *default
-    database: <%= ENV.fetch("DB_NAME", "myapp_production") %>
+cable:
+  <<: *default
+  database: <%= ENV.fetch("DB_NAME", "myapp_production") %>
 
-  cable:
-    <<: *default
-    database: <%= ENV.fetch("DB_NAME", "myapp_production") %>
+queue:
+  <<: *default
+  database: <%= ENV.fetch("DB_NAME", "myapp_production") %>
+
+cache:
+  <<: *default
+  database: <%= ENV.fetch("DB_NAME", "myapp_production") %>
